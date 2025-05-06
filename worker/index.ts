@@ -1,17 +1,9 @@
-interface Env {
-  ASSETS: Fetcher;
-}
+import { Hono } from "hono";
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+const app = new Hono();
 
-    if (url.pathname.startsWith("/api/")) {
-      return Response.json({
-        name: "Cloudflare",
-      });
-    }
+app.use("/api/*", async (c) => {
+    return c.json({name: "Cloudflare"});
+});
 
-    return new Response(null, { status: 404 });
-  },
-} satisfies ExportedHandler<Env>;
+export default app;
