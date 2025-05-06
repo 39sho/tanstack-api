@@ -1,5 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { hc } from "hono/client";
+import type { AppType } from "../../worker/index";
 import logo from "../logo.svg";
 
 export const Route = createFileRoute("/")({
@@ -7,7 +9,13 @@ export const Route = createFileRoute("/")({
 });
 
 function App() {
-  const [name, setName] = useState("unknown");
+  const { status, data } = useQuery({
+    queryKey: ["name"],
+    queryFn: async () => {
+      const client = hc<AppType>(document.location.origin);
+      return await (await client.api.name.$get()).json();
+    },
+  });
 
   return (
     <div className="text-center">
@@ -37,18 +45,9 @@ function App() {
           Learn TanStack
         </a>
         <div className="card">
-          <button
-            className="border-2"
-            type="button"
-            onClick={() => {
-              fetch("/api/")
-                .then((res) => res.json() as Promise<{ name: string }>)
-                .then((data) => setName(data.name));
-            }}
-            aria-label="get name"
-          >
-            Name from API is: {name}
-          </button>
+          <div>
+            Name from API is: {status === "success" ? data.name : "loading ..."}
+          </div>
           <p>
             Edit <code>api/index.ts</code> to change the name
           </p>
